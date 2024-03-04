@@ -4,7 +4,7 @@ import torch.nn.functional as F
 from .softmax_loss import CrossEntropyLabelSmooth
 from .triplet_loss import TripletLoss, cosine_dist
 from .spatial_align_loss import SpatialAlignLoss
-
+from .recallatk_loss import RecallatK
 
 class ReIDLoss(nn.Module):
     """Build the loss function for ReID tasks. 
@@ -14,6 +14,7 @@ class ReIDLoss(nn.Module):
 
         self.triplet = TripletLoss(args.margin, normalize_feature=True)
         self.softmax = CrossEntropyLabelSmooth(num_classes=num_classes)
+        self.recallatk = RecallatK(batch_size=args.batch_size, samples_per_class=args.num_instance)
         if args.sam_mode != 'none':
             self.spatial = SpatialAlignLoss(args.sam_mode)
             self.sam_mode = args.sam_mode
@@ -22,6 +23,8 @@ class ReIDLoss(nn.Module):
             self.sam_mode = None
 
     def forward(self, feats, logits, sam_logits, target, sam=False):
+        recallatk_loss = self.recallatk(logits, target)
+        # return recallatk_loss
         triplet_loss = self.triplet(feats, target)[0]
         softmax_loss = self.softmax(logits, target)
         if self.sam_mode != None and sam:

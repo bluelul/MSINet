@@ -125,7 +125,13 @@ class R1_mAP():
         g_camids = np.asarray(self.camids[self.num_query:])
         if self.reranking:
             print('=> Enter reranking')
-            distmat = re_ranking(qf, gf, k1=30, k2=10, lambda_value=0.2)
+            qf_np = qf.cpu()
+            gf_np = gf.cpu()
+            # q_g_dist = np.dot(qf_np, np.transpose(gf_np))
+            # q_q_dist = np.dot(qf_np, np.transpose(qf_np))
+            # g_g_dist = np.dot(gf_np, np.transpose(gf_np))
+            # distmat = re_ranking(q_g_dist, q_q_dist, g_g_dist, k1=30, k2=10, lambda_value=0.2)
+            distmat = re_ranking(qf_np, gf_np, k1=30, k2=10, lambda_value=0.2)
 
         else:
             if self.method == 'euclidean':
